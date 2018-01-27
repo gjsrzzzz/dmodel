@@ -76,7 +76,7 @@ public @Data class DataModel {
         eventMap.put(Event.INFINITY.getVersion(), Event.INFINITY);
         dataPoints.clear();
         for (BackLink link : finalLinks) {
-            String repeatKey= RepeatSequenceHelper.toRepeatKey(link.getHierarchy());
+            String repeatKey=link.getRepeatSequence().getRepeatKey();
             addLink(eventMap, repeatKey, link);
             for (BackLink mergedLink: link.getMergedWith())
             {

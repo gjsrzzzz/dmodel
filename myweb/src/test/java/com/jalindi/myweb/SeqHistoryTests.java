@@ -32,15 +32,14 @@ public class SeqHistoryTests
         log.info(""+model);
         assertArrayEquals(new String[][] {
                 {"/1","","Red","--","--"},
-                {"/2","","", "", "Orange"},
-                {"/3","","Blue","--","--"},
-                {"/4","Green","--","--","--"},
-                {"/5","","","Yellow","--"}},
+                {"/2","","Blue", "", "Orange"},
+                {"/3","Green","--","--","--"},
+                {"/4","","","Yellow","--"}},
                 grid.getGrid());
     }
 
     private DataModel createDataModel1() {
-        DataModel model=new DataModel(1);
+        DataModel model=new DataModel();
         model.add("Red", "Green", "Blue");
 
         DataModel nextModel=model.nextVersion();
@@ -53,7 +52,7 @@ public class SeqHistoryTests
     }
 
     private DataModel createDataModel2() {
-        DataModel model=new DataModel(1);
+        DataModel model=new DataModel();
         model.add("Green");
 
         DataModel nextModel=model.nextVersion();
@@ -84,15 +83,14 @@ public class SeqHistoryTests
         log.info(""+model);
         assertArrayEquals(new String[][] {
                         {"/1","","Red","","Red"},
-                        {"/2","","", "", "Orange"},
-                        {"/3","","Blue","--","--"},
-                        {"/4","Green","--","--","--"},
-                        {"/5","","","Yellow","--"}},
+                        {"/2","","Blue", "", "Orange"},
+                        {"/3","Green","--","--","--"},
+                        {"/4","","","Yellow","--"}},
                 grid.getGrid());
     }
 
     private DataModel createDataModel3() {
-        DataModel model=new DataModel(1);
+        DataModel model=new DataModel();
         model.add("Green");
 
         DataModel nextModel=model.nextVersion();
@@ -107,6 +105,8 @@ public class SeqHistoryTests
         nextModel.resequence();
         model.merge(nextModel);
 
+        ModelGrid grid=model.asGrid();
+        log.info("Model\n"+grid);
         nextModel=model.nextVersion();
         nextModel.addAfter(null,"Red","Orange");
         nextModel.resequence();
@@ -114,4 +114,34 @@ public class SeqHistoryTests
         return model;
     }
 
+
+    @Test
+    public void testHistoryHierarchy()
+    {
+        DataModel model= createDataModelHeirachy();
+        ModelGrid grid=model.asGrid();
+        log.info("Model\n"+grid);
+        log.info(""+model);
+        assertArrayEquals(new String[][] {
+                        {"/CP/1","Blue","--"},
+                        {"/CP/2","Green", "--"},
+                        {"/JP/1","Red","--"},
+                        {"/JP/2","Green","--"},
+                        {"/JP/3","","Blue"}},
+                grid.getGrid());
+    }
+
+    private DataModel createDataModelHeirachy() {
+        DataModel model=new DataModel();
+     //   model.addWithRepeat("Green", "/JP/1");
+        model.addAtRepeat("/CP", "Blue");
+        model.addAtRepeat("/CP","Green" );
+        model.addAtRepeat("/JP","Red" );
+        model.addAtRepeat("/JP","Green" );
+
+        DataModel nextModel=nextModel=model.nextVersion();
+        nextModel.addAtRepeat("/JP","Blue" );
+        model.merge(nextModel);
+        return model;
+    }
 }

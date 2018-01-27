@@ -4,9 +4,13 @@ import java.util.Arrays;
 import java.util.Stack;
 
 public class RepeatSequenceHelper {
-    public static int[] getHierarchy(String repeatKey) {
+ /*   public static int[] getHierarchy(String repeatKey) {
         RepeatSequence sequence=new RepeatSequence(repeatKey);
         return sequence.hierarchy;
+    }*/
+    public static RepeatSequence getHierarchy(String repeatKey) {
+        RepeatSequence sequence=new RepeatSequence(repeatKey);
+        return sequence;
     }
 
     public static String toRepeatKey(int[] hierarchy) {
@@ -21,6 +25,10 @@ public class RepeatSequenceHelper {
     {
         private String repeatPrefix;
         private int[] hierarchy;
+        private RepeatSequence()
+        {
+
+        }
 
         public RepeatSequence(String repeatKey)
         {
@@ -59,10 +67,45 @@ public class RepeatSequenceHelper {
 
         @Override
         public String toString() {
-            return "RepeatSequence{" +
-                    "repeatPrefix='" + repeatPrefix + '\'' +
-                    ", hierarchy=" + Arrays.toString(hierarchy) +
-                    '}';
+            StringBuilder builder = new StringBuilder();
+            builder.append(repeatPrefix);
+            for (int i=0; i<hierarchy.length;i++)
+            {
+                if (builder.length()>1)
+                {
+                    builder.append(", ");
+                }
+                builder.append(hierarchy[i]);
+            }
+
+            return builder.toString();
+        }
+
+        public RepeatSequence resequence(int repeatIndex) {
+            RepeatSequence newRepeatSequence=new RepeatSequence();
+            newRepeatSequence.repeatPrefix=repeatPrefix;
+            newRepeatSequence.hierarchy=Arrays.copyOf(hierarchy, hierarchy.length);
+            newRepeatSequence.hierarchy[hierarchy.length-1]=repeatIndex;
+            return newRepeatSequence;
+        }
+
+        public String getRepeatKey() {
+            StringBuilder builder=new StringBuilder();
+            builder.append(repeatPrefix);
+            boolean first=true;
+            for (int pathItem : hierarchy) {
+                if (!first)
+                {
+                    builder.append("/");
+                }
+                builder.append(pathItem);
+                first=false;
+            }
+            return builder.toString();
+        }
+
+        public String getRepeatPrefix() {
+            return repeatPrefix;
         }
     }
   /*  public static int nextRepeat(Iterable<String> repeatKeys)

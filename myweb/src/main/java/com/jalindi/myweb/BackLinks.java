@@ -38,22 +38,32 @@ public class BackLinks {
     }
 
 
-
-    private void resequence() {
+    private static class ResequenceData
+    {
         int repeatIndex=1;
         BackLink previousLink=null;
+    }
+
+    private void resequence() {
+        Map<String, ResequenceData> resequenceDataMap=new HashMap<>();
         for (ListIterator<BackLink> iterator= nextLinks.listIterator(); iterator.hasNext(); ) {
             BackLink link=iterator.next();
-            boolean wasMergedPrevious = link.mergeInto(lastVersion, previousLink);
+            ResequenceData resequenceData=resequenceDataMap.get(link.getRepeatSequence().getRepeatPrefix());
+            if (resequenceData==null)
+            {
+                resequenceData=new ResequenceData();
+                resequenceDataMap.put(link.getRepeatSequence().getRepeatPrefix(), resequenceData);
+            }
+            boolean wasMergedPrevious = link.mergeInto(lastVersion, resequenceData.previousLink);
             if (wasMergedPrevious)
             {
                 iterator.remove();
             }
             else {
-                link.setHierarchy(new int[]{repeatIndex});
+                link.setRepeatSequence(link.getRepeatSequence().resequence(resequenceData.repeatIndex));
   //              link.setValidFrom(link.getFirstLink().getValidFrom());
-                repeatIndex++;
-                previousLink=link;
+                resequenceData.repeatIndex++;
+                resequenceData.previousLink=link;
             }
         }
     }

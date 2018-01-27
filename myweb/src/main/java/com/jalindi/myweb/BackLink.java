@@ -16,7 +16,8 @@ class BackLink
 {
     private @NonNull
     String value;
-    private @NonNull int[] hierarchy;
+    private @NonNull
+    RepeatSequenceHelper.RepeatSequence repeatSequence;
     private @NonNull int validFrom;
     private @NonNull int validTo;
     private BackLink backLink=null;
@@ -47,14 +48,8 @@ class BackLink
     {
         StringBuilder builder=new StringBuilder();
         builder.append("[");
-        for (int i=0; i<hierarchy.length;i++)
-        {
-            if (builder.length()>1)
-            {
-                builder.append(", ");
-            }
-            builder.append(hierarchy[i]);
-        }
+        builder.append(repeatSequence.toString());
+
         builder.append("]");
         return String.format("%15s", value)+builder+"("+validFrom+"-"+validTo+") "+(linked?"linked ":"")+(backLink==null?"":"backlink="+backLink);
     }
