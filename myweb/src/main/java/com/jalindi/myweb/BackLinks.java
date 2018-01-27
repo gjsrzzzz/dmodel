@@ -41,15 +41,25 @@ public class BackLinks {
 
     private void resequence() {
         int repeatIndex=1;
-        for (BackLink link : nextLinks) {
-            link.setHierarchy(new int[] {repeatIndex});
-            link.setValidFrom(link.getFirstLink().getValidFrom());
-            repeatIndex++;
+        BackLink previousLink=null;
+        for (ListIterator<BackLink> iterator= nextLinks.listIterator(); iterator.hasNext(); ) {
+            BackLink link=iterator.next();
+            boolean wasMergedPrevious = link.mergeInto(lastVersion, previousLink);
+            if (wasMergedPrevious)
+            {
+                iterator.remove();
+            }
+            else {
+                link.setHierarchy(new int[]{repeatIndex});
+  //              link.setValidFrom(link.getFirstLink().getValidFrom());
+                repeatIndex++;
+                previousLink=link;
+            }
         }
     }
 
     private void createBackLinksAndResequence() {
-        for (int version = lastVersion; version>=1; version--) {
+        for (int version = lastVersion; version>=0; version--) {
             // Create back links
             createBackLinks(version);
             // Create linked list
@@ -113,7 +123,7 @@ public class BackLinks {
     public void log()
     {
         StringBuilder builder=new StringBuilder();
-        builder.append("LINKS for version "+lastVersion+"\nnext links\n");
+        builder.append("LINKS for amendment "+lastVersion+"\nnext links\n");
         for (BackLink link : nextLinks)
         {
             builder.append(link+"\n");
@@ -127,7 +137,7 @@ public class BackLinks {
                     builder.append(link + "\n");
                 }
             }
-            log.info(builder.toString());
         }
+        log.info(builder.toString());
     }
 }

@@ -19,4 +19,8 @@ public @Data @AllArgsConstructor class DataPoint {
     public boolean coversVersion(int version) {
         return validFrom.getVersion()<=version && validTo.getVersion() >= version;
     }
+
+    public RepeatCoverage getRepeatCoverage() {
+        return new RepeatCoverage(repeatKey, validFrom, validTo);
+    }
 }

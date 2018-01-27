@@ -1,18 +1,18 @@
 package com.jalindi.myweb;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 
 import java.util.*;
 
 public @Data class DataModel {
     private final List<Event> events=new ArrayList<>();
-    private final Map<String, DataPoint> dataPoints=new LinkedHashMap<>();
+    private final Map<RepeatCoverage, DataPoint> dataPoints=new LinkedHashMap<>();
 
-    public DataModel(int version) {
+    public DataModel() {
+        events.add(new Event(0));
+    }
+
+    private DataModel(int version) {
         events.add(new Event(version));
     }
 
@@ -22,11 +22,11 @@ public @Data class DataModel {
     }
 
     private void add(String string, String repeatKey) {
-        if (dataPoints.containsKey(repeatKey))
+        if (dataPoints.containsKey(RepeatCoverage.create(events, repeatKey)))
         {
             throw new ModelException("Duplicate repeat key "+ repeatKey);
         }
-        dataPoints.put(repeatKey, new DataPoint(string, repeatKey, firstEvent(), Event.INFINITY));
+        addDataPoint(new DataPoint(string, repeatKey, firstEvent(), Event.INFINITY));
     }
 
     public Event getLastEvent() {
@@ -76,12 +76,56 @@ public @Data class DataModel {
         eventMap.put(Event.INFINITY.getVersion(), Event.INFINITY);
         dataPoints.clear();
         for (BackLink link : finalLinks) {
-            DataPoint dataPoint=new DataPoint(link.getValue(), RepeatSequenceHelper.toRepeatKey(link.getHierarchy()),
-                    eventMap.get(link.getValidFrom()), eventMap.get(link.getValidTo()));
-            dataPoints.put(dataPoint.getRepeatKey(), dataPoint);
+            String repeatKey= RepeatSequenceHelper.toRepeatKey(link.getHierarchy());
+            addLink(eventMap, repeatKey, link);
+            for (BackLink mergedLink: link.getMergedWith())
+            {
+                addLink(eventMap, repeatKey, mergedLink);
+            }
         }
     }
 
+    private void addLink(Map<Integer, Event> eventMap, String repeatKey, BackLink link) {
+        boolean[] coverage= link.getCoverageWithoutMerged();
+        int validFrom=-1;
+        boolean on=false;
+        for (int version=0; version<coverage.length;version++)
+        {
+            boolean covers=coverage[version];
+            if (on)
+            {
+                if (!covers)
+                {
+                    DataPoint dataPoint=new DataPoint(link.getValue(), repeatKey,
+                            eventMap.get(validFrom), eventMap.get(version-1));
+                    addDataPoint(dataPoint);
+                    on=false;
+                }
+            }
+            else
+            {
+                if (covers)
+                {
+                    on=true;
+                    validFrom=version;
+                }
+            }
+        }
+        if (on) {
+            DataPoint dataPoint = new DataPoint(link.getValue(), repeatKey,
+                    eventMap.get(validFrom), eventMap.get(link.getValidTo()));
+            addDataPoint(dataPoint);
+        }
+    }
+
+    private void addDataPoint(DataPoint dataPoint) {
+        dataPoints.put(dataPoint.getRepeatCoverage(), dataPoint);
+    }
+
+    /* Resequence the repeats starting at 1
+    note: currently this will also set the version range for each datapoint to infinity
+    todo: this will not work if this is nested
+     */
     public void resequence()
     {
         Collection<DataPoint> points=new ArrayList<>(dataPoints.values());
@@ -96,9 +140,21 @@ public @Data class DataModel {
 
     public void add(String ... strings ) {
         int repeatIndex=RepeatSequenceHelper.nextRepeat(dataPoints.keySet());
-        repeatIndex = addValues(repeatIndex, strings);
+        repeatIndex = addValues(repeatIndex, "/", strings);
     }
 
+    public void addAtRepeat(String repeatPrefix, String ... strings ) {
+        if (!repeatPrefix.endsWith("/"))
+        {
+            repeatPrefix=repeatPrefix+"/";
+        }
+        int repeatIndex=RepeatSequenceHelper.nextRepeat(repeatPrefix, dataPoints.keySet());
+        repeatIndex = addValues(repeatIndex, repeatPrefix, strings);
+    }
+
+    /* inserts values into the list after a certain data point
+       note: all values are reinserted to this also resequences
+     */
     public void addAfter(String afterValue, String... values) {
         Collection<DataPoint> points = new ArrayList<>(dataPoints.values());
         dataPoints.clear();
@@ -106,30 +162,34 @@ public @Data class DataModel {
         boolean first = true;
         for (DataPoint dataPoint : points) {
             if (first && afterValue == null) {
-                repeatIndex = addValues(repeatIndex, values);
+                repeatIndex = addValues(repeatIndex, "/", values);
             }
             add(dataPoint.getValue(), "/" + repeatIndex);
             repeatIndex++;
             if (dataPoint.getValue().equals(afterValue)) {
-                repeatIndex = addValues(repeatIndex, values);
+                repeatIndex = addValues(repeatIndex, "/", values);
             }
 
             first = false;
         }
     }
 
-    private int addValues(int repeatIndex, String[] values) {
+    private int addValues(int repeatIndex, final String repeatPrefix, final String[] values) {
+        if (!repeatPrefix.endsWith("/"))
+        {
+            throw new ModelException("repeat prefix must end with /");
+        }
         for (String value : values) {
-            add(value, "/" + repeatIndex);
+            add(value, repeatPrefix + repeatIndex);
             repeatIndex++;
         }
         return repeatIndex;
     }
 
     public void remove(String ... strings) {
-        String repeatKey=null;
+        RepeatCoverage repeatKey=null;
         for (String string : strings) {
-            for (Map.Entry<String, DataPoint> entry : dataPoints.entrySet()) {
+            for (Map.Entry<RepeatCoverage, DataPoint> entry : dataPoints.entrySet()) {
                 if (entry.getValue().getValue().equals(string))
                 {
                     repeatKey=entry.getKey();
