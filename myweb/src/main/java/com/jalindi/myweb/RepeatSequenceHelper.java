@@ -90,10 +90,15 @@ public class RepeatSequenceHelper {
         }
 
         public String getRepeatKey() {
+            return getRepeatKey(hierarchy.length);
+        }
+
+        public String getRepeatKey(int stopAtPathItem) {
             StringBuilder builder=new StringBuilder();
             builder.append(repeatPrefix);
             boolean first=true;
-            for (int pathItem : hierarchy) {
+            for (int i=0; i<stopAtPathItem; i++) {
+                int pathItem= hierarchy[i];
                 if (!first)
                 {
                     builder.append("/");
@@ -106,6 +111,27 @@ public class RepeatSequenceHelper {
 
         public String getRepeatPrefix() {
             return repeatPrefix;
+         }
+
+        public String getPrefixForLastInHierarchy() {
+            if (hierarchy.length<=1)
+            {
+                return repeatPrefix;
+            }
+            return getRepeatKey(hierarchy.length-1)+"/";
+        }
+
+        public int lastInHierarchy() {
+            return hierarchy[hierarchy.length-1];
+        }
+
+        public int length()
+        {
+            return hierarchy.length;
+        }
+
+        public void resequencePathItem(int pathItemToResequence, int repeatIndex) {
+            hierarchy[pathItemToResequence]=repeatIndex;
         }
     }
   /*  public static int nextRepeat(Iterable<String> repeatKeys)
@@ -137,8 +163,9 @@ public class RepeatSequenceHelper {
         {
             String repeatKey=repeatCoverage.getRepeatKey();
             RepeatSequence sequence=new RepeatSequence(repeatKey);
-            if (sequence.repeatPrefix.equals(repeatPrefix)) {
-                maxRepeat = Math.max(maxRepeat, sequence.hierarchy[0]);
+            String sequencePrefix=sequence.getPrefixForLastInHierarchy();
+            if (sequencePrefix.equals(repeatPrefix)) {
+                maxRepeat = Math.max(maxRepeat, sequence.lastInHierarchy());
             }
         }
         return maxRepeat+1;

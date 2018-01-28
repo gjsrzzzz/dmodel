@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.Assert.*;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 @Log
 public class SeqHistoryTests
@@ -58,7 +59,9 @@ public class SeqHistoryTests
         DataModel nextModel=model.nextVersion();
         nextModel.remove("Green");
         nextModel.add("Red","Blue","Green");
+        assertEquals(3, nextModel.size());
         nextModel.resequence();
+        assertEquals(3, nextModel.size());
         model.merge(nextModel);
 
        nextModel=model.nextVersion();
@@ -118,7 +121,7 @@ public class SeqHistoryTests
     @Test
     public void testHistoryHierarchy()
     {
-        DataModel model= createDataModelHeirachy();
+        DataModel model= createDataModelHierarchy();
         ModelGrid grid=model.asGrid();
         log.info("Model\n"+grid);
         log.info(""+model);
@@ -131,7 +134,7 @@ public class SeqHistoryTests
                 grid.getGrid());
     }
 
-    private DataModel createDataModelHeirachy() {
+    private DataModel createDataModelHierarchy() {
         DataModel model=new DataModel();
      //   model.addWithRepeat("Green", "/JP/1");
         model.addAtRepeat("/CP", "Blue");
@@ -141,6 +144,40 @@ public class SeqHistoryTests
 
         DataModel nextModel=nextModel=model.nextVersion();
         nextModel.addAtRepeat("/JP","Blue" );
+        model.merge(nextModel);
+        return model;
+    }
+
+    @Test
+    public void testPartyHierarchy()
+    {
+        DataModel model= createDataModelPartyHierarchy();
+        ModelGrid grid=model.asGrid();
+        log.info("Model\n"+grid);
+        log.info(""+model);
+        assertArrayEquals(new String[][] {
+                        {"/1","","IM0"},
+                        {"/2","IM1", "--"},
+                        {"/2/1","CP1","--"},
+                        {"/2/2","CP2","--"},
+                        {"/3","IM2","--"},
+                        {"/4","CP3","--"}},
+                grid.getGrid());
+    }
+
+    private DataModel createDataModelPartyHierarchy() {
+        DataModel model=new DataModel();
+        model.addAtRepeat("/", "IM1");
+        model.addAtRepeat("/1","CP1" );
+        model.addAtRepeat("/1","CP2" );
+        model.addAtRepeat("/","IM2" );
+        model.addAtRepeat("/","CP3" );
+        ModelGrid grid=model.asGrid();
+        log.info("Model\n"+grid);
+
+        DataModel nextModel=nextModel=model.nextVersion();
+   //    nextModel.add("IM0" );
+        nextModel.addAfter(null,"IM0" );
         model.merge(nextModel);
         return model;
     }

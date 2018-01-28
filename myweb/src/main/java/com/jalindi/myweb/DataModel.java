@@ -124,18 +124,10 @@ public @Data class DataModel {
 
     /* Resequence the repeats starting at 1
     note: currently this will also set the version range for each datapoint to infinity
-    todo: this will not work if this is nested
      */
     public void resequence()
     {
-        Collection<DataPoint> points=new ArrayList<>(dataPoints.values());
-        dataPoints.clear();
-        int repeatIndex=RepeatSequenceHelper.nextRepeat(dataPoints.keySet());
-        for (DataPoint dataPoint : points)
-        {
-            add (dataPoint.getValue(), "/"+repeatIndex);
-            repeatIndex++;
-        }
+        addAfter(null, null);
     }
 
     public void add(String ... strings ) {
@@ -156,22 +148,9 @@ public @Data class DataModel {
        note: all values are reinserted to this also resequences
      */
     public void addAfter(String afterValue, String... values) {
-        Collection<DataPoint> points = new ArrayList<>(dataPoints.values());
-        dataPoints.clear();
-        int repeatIndex = RepeatSequenceHelper.nextRepeat(dataPoints.keySet());
-        boolean first = true;
-        for (DataPoint dataPoint : points) {
-            if (first && afterValue == null) {
-                repeatIndex = addValues(repeatIndex, "/", values);
-            }
-            add(dataPoint.getValue(), "/" + repeatIndex);
-            repeatIndex++;
-            if (dataPoint.getValue().equals(afterValue)) {
-                repeatIndex = addValues(repeatIndex, "/", values);
-            }
-
-            first = false;
-        }
+        Resequencer resequencer=new Resequencer(dataPoints.values(), 0);
+        resequencer.resequence(getLastEvent().getVersion(), afterValue, values);
+        rebuild(resequencer.getLinks());
     }
 
     private int addValues(int repeatIndex, final String repeatPrefix, final String[] values) {
@@ -205,4 +184,7 @@ public @Data class DataModel {
     }
 
 
+    public int size() {
+        return dataPoints.size();
+    }
 }

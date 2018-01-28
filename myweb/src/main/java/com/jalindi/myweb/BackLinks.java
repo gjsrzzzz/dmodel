@@ -37,35 +37,9 @@ public class BackLinks {
         // Rebuild
     }
 
-
-    private static class ResequenceData
-    {
-        int repeatIndex=1;
-        BackLink previousLink=null;
-    }
-
     private void resequence() {
-        Map<String, ResequenceData> resequenceDataMap=new HashMap<>();
-        for (ListIterator<BackLink> iterator= nextLinks.listIterator(); iterator.hasNext(); ) {
-            BackLink link=iterator.next();
-            ResequenceData resequenceData=resequenceDataMap.get(link.getRepeatSequence().getRepeatPrefix());
-            if (resequenceData==null)
-            {
-                resequenceData=new ResequenceData();
-                resequenceDataMap.put(link.getRepeatSequence().getRepeatPrefix(), resequenceData);
-            }
-            boolean wasMergedPrevious = link.mergeInto(lastVersion, resequenceData.previousLink);
-            if (wasMergedPrevious)
-            {
-                iterator.remove();
-            }
-            else {
-                link.setRepeatSequence(link.getRepeatSequence().resequence(resequenceData.repeatIndex));
-  //              link.setValidFrom(link.getFirstLink().getValidFrom());
-                resequenceData.repeatIndex++;
-                resequenceData.previousLink=link;
-            }
-        }
+        Resequencer resequencer=new Resequencer(nextLinks);
+        resequencer.resequence(lastVersion);
     }
 
     private void createBackLinksAndResequence() {
