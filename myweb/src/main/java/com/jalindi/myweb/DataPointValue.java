@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 
-public @Data @AllArgsConstructor class DataPoint {
+public @Data @AllArgsConstructor class DataPointValue {
     private @NonNull final String value;
     private @NonNull final String repeatKey;
     private @NonNull final Event validFrom;

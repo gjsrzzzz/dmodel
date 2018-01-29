@@ -10,16 +10,16 @@ public class BackLinks {
     private final LinkedList<BackLink> previousLinks=new LinkedList();
     private final LinkedList<BackLink> nextLinks=new LinkedList();
 
-    public BackLinks(Iterable<DataPoint> previousDataPoints, Iterable<DataPoint> nextDataPoints, int version) {
+    public BackLinks(Iterable<DataPointValue> previousDataPoints, Iterable<DataPointValue> nextDataPoints, int version) {
         this.lastVersion=version;
-        for (DataPoint point : previousDataPoints)
+        for (DataPointValue point : previousDataPoints)
         {
             BackLink link=new BackLink(point.getValue(), RepeatSequenceHelper.getHierarchy(point.getRepeatKey()),
                     point.getValidFrom().getVersion(), point.getValidTo().getVersion());
             previousLinks.add(link);
         }
 
-        for (DataPoint point : nextDataPoints)
+        for (DataPointValue point : nextDataPoints)
         {
             BackLink link=new BackLink(point.getValue(), RepeatSequenceHelper.getHierarchy(point.getRepeatKey()),
                     version, Event.INFINITY.getVersion());

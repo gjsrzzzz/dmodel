@@ -2,7 +2,6 @@ package com.jalindi.myweb;
 
 import lombok.extern.java.Log;
 import org.junit.Test;
-import org.junit.Assert.*;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +12,7 @@ public class SeqHistoryTests
     @Test
     public void testHistory()
     {
-        DataModel model= createDataModel1();
+        DataPointHistory model= createDataModel1();
         ModelGrid grid=model.asGrid();
         log.info("Model\n"+grid);
         log.info(""+model);
@@ -27,7 +26,7 @@ public class SeqHistoryTests
     @Test
     public void testHistory2()
     {
-        DataModel model= createDataModel2();
+        DataPointHistory model= createDataModel2();
         ModelGrid grid=model.asGrid();
         log.info("Model\n"+grid);
         log.info(""+model);
@@ -39,11 +38,11 @@ public class SeqHistoryTests
                 grid.getGrid());
     }
 
-    private DataModel createDataModel1() {
-        DataModel model=new DataModel();
+    private DataPointHistory createDataModel1() {
+        DataPointHistory model=new DataPointHistory();
         model.add("Red", "Green", "Blue");
 
-        DataModel nextModel=model.nextVersion();
+        DataPointHistory nextModel=model.nextVersion();
         nextModel.remove("Green");
         nextModel.add("Orange");
         nextModel.resequence();
@@ -52,11 +51,11 @@ public class SeqHistoryTests
         return model;
     }
 
-    private DataModel createDataModel2() {
-        DataModel model=new DataModel();
+    private DataPointHistory createDataModel2() {
+        DataPointHistory model=new DataPointHistory();
         model.add("Green");
 
-        DataModel nextModel=model.nextVersion();
+        DataPointHistory nextModel=model.nextVersion();
         nextModel.remove("Green");
         nextModel.add("Red","Blue","Green");
         assertEquals(3, nextModel.size());
@@ -80,7 +79,7 @@ public class SeqHistoryTests
     @Test
     public void testHistory3()
     {
-        DataModel model= createDataModel3();
+        DataPointHistory model= createDataModel3();
         ModelGrid grid=model.asGrid();
         log.info("Model\n"+grid);
         log.info(""+model);
@@ -92,11 +91,11 @@ public class SeqHistoryTests
                 grid.getGrid());
     }
 
-    private DataModel createDataModel3() {
-        DataModel model=new DataModel();
+    private DataPointHistory createDataModel3() {
+        DataPointHistory model=new DataPointHistory();
         model.add("Green");
 
-        DataModel nextModel=model.nextVersion();
+        DataPointHistory nextModel=model.nextVersion();
         nextModel.remove("Green");
         nextModel.add("Red","Blue","Green");
         nextModel.resequence();
@@ -121,7 +120,7 @@ public class SeqHistoryTests
     @Test
     public void testHistoryHierarchy()
     {
-        DataModel model= createDataModelHierarchy();
+        DataPointHistory model= createDataModelHierarchy();
         ModelGrid grid=model.asGrid();
         log.info("Model\n"+grid);
         log.info(""+model);
@@ -134,15 +133,15 @@ public class SeqHistoryTests
                 grid.getGrid());
     }
 
-    private DataModel createDataModelHierarchy() {
-        DataModel model=new DataModel();
+    private DataPointHistory createDataModelHierarchy() {
+        DataPointHistory model=new DataPointHistory();
      //   model.addWithRepeat("Green", "/JP/1");
         model.addAtRepeat("/CP", "Blue");
         model.addAtRepeat("/CP","Green" );
         model.addAtRepeat("/JP","Red" );
         model.addAtRepeat("/JP","Green" );
 
-        DataModel nextModel=nextModel=model.nextVersion();
+        DataPointHistory nextModel=nextModel=model.nextVersion();
         nextModel.addAtRepeat("/JP","Blue" );
         model.merge(nextModel);
         return model;
@@ -151,7 +150,7 @@ public class SeqHistoryTests
     @Test
     public void testPartyHierarchy()
     {
-        DataModel model= createDataModelPartyHierarchy();
+        DataPointHistory model= createDataModelPartyHierarchy();
         ModelGrid grid=model.asGrid();
         log.info("Model\n"+grid);
         log.info(""+model);
@@ -165,8 +164,8 @@ public class SeqHistoryTests
                 grid.getGrid());
     }
 
-    private DataModel createDataModelPartyHierarchy() {
-        DataModel model=new DataModel();
+    private DataPointHistory createDataModelPartyHierarchy() {
+        DataPointHistory model=new DataPointHistory();
         model.addAtRepeat("/", "IM1");
         model.addAtRepeat("/1","CP1" );
         model.addAtRepeat("/1","CP2" );
@@ -175,7 +174,7 @@ public class SeqHistoryTests
         ModelGrid grid=model.asGrid();
         log.info("Model\n"+grid);
 
-        DataModel nextModel=nextModel=model.nextVersion();
+        DataPointHistory nextModel=nextModel=model.nextVersion();
    //    nextModel.add("IM0" );
         nextModel.addAfter(null,"IM0" );
         model.merge(nextModel);

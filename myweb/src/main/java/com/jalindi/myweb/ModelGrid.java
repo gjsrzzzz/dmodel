@@ -11,25 +11,25 @@ public class ModelGrid {
     private static final String FIRST_COLUMN="repeatKey";
     private static final String DITTO="--";
 
-    public ModelGrid(DataModel dataModel) {
+    public ModelGrid(DataPointHistory dataPointHistory) {
         Map<Integer, Event> eventMap = new TreeMap<>();
-        int numberOfEvents = getNumberOfEvents(dataModel, eventMap);
-        Map<String, Integer> repeatRowMap = createRepeatRowMap(dataModel);
+        int numberOfEvents = getNumberOfEvents(dataPointHistory, eventMap);
+        Map<String, Integer> repeatRowMap = createRepeatRowMap(dataPointHistory);
         grid = new String[repeatRowMap.size()][numberOfEvents + 1];
         maxColumnWidths = new int[numberOfEvents + 1];
         maxColumnWidths[0] = FIRST_COLUMN.length();
         createRepeatKeyColumn(repeatRowMap);
-        createDataColumns(dataModel, eventMap, repeatRowMap);
+        createDataColumns(dataPointHistory, eventMap, repeatRowMap);
     }
 
-    private void createDataColumns(DataModel dataModel, Map<Integer, Event> eventMap, Map<String, Integer> repeatRowMap) {
+    private void createDataColumns(DataPointHistory dataPointHistory, Map<Integer, Event> eventMap, Map<String, Integer> repeatRowMap) {
         int column =1;
         for (Event event : eventMap.values()) {
-            for (Map.Entry<RepeatCoverage, DataPoint> entry: dataModel.getDataPoints().entrySet()) {
-                DataPoint dataPoint=entry.getValue();
+            for (Map.Entry<RepeatCoverage, DataPointValue> entry: dataPointHistory.getDataPoints().entrySet()) {
+                DataPointValue dataPointValue =entry.getValue();
                 int row=repeatRowMap.get(entry.getKey().getRepeatKey());
                 String cell = "";
-                if (dataPoint.coversVersion(event.getVersion())) {
+                if (dataPointValue.coversVersion(event.getVersion())) {
                     int columnSearch=column - 1;
                     String lastValue=columnSearch == 0?"__":grid[row][columnSearch];
                     while (columnSearch>1 && lastValue.equals(DITTO))
@@ -37,8 +37,8 @@ public class ModelGrid {
                         columnSearch--;
                         lastValue=grid[row][columnSearch];
                     }
-                    if (column == 1 || !lastValue.equals(dataPoint.getValue())) {
-                        cell = dataPoint.getValue();
+                    if (column == 1 || !lastValue.equals(dataPointValue.getValue())) {
+                        cell = dataPointValue.getValue();
                     } else {
                         cell = DITTO;
                     }
@@ -52,11 +52,11 @@ public class ModelGrid {
         }
     }
 
-    private static Map<String, Integer> createRepeatRowMap(DataModel dataModel) {
+    private static Map<String, Integer> createRepeatRowMap(DataPointHistory dataPointHistory) {
         Map<String, Integer> repeats=new LinkedHashMap<>();
         {
             int row = 0;
-            for (RepeatCoverage repeatCoverage : dataModel.getDataPoints().keySet()) {
+            for (RepeatCoverage repeatCoverage : dataPointHistory.getDataPoints().keySet()) {
                 if (!repeats.containsKey(repeatCoverage.getRepeatKey())) {
                     repeats.put(repeatCoverage.getRepeatKey(), row++);
                 }
@@ -73,9 +73,9 @@ public class ModelGrid {
         }
     }
 
-    private int getNumberOfEvents(DataModel dataModel, Map<Integer, Event> eventMap) {
+    private int getNumberOfEvents(DataPointHistory dataPointHistory, Map<Integer, Event> eventMap) {
         int numberOfEvents = 0;
-        for (Event event : dataModel.getEvents()) {
+        for (Event event : dataPointHistory.getEvents()) {
             if (!event.equals(Event.INFINITY)) {
                 eventMap.put(event.getVersion(), event);
                 numberOfEvents++;
@@ -107,14 +107,14 @@ public class ModelGrid {
     private void addColumnHeaders(StringBuilder builder) {
         for (int c = 0; c < maxColumnWidths.length; c++) {
             int columnWidth = maxColumnWidths[c];
-            try {
-                builder.append(String.format("%" + columnWidth + "s ", (c == 0 ? FIRST_COLUMN : Integer.toString(c-1))));
-            }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
-                log.severe("Failed to create item : '%" + columnWidth + "s '");
-                throw ex;
+            if (columnWidth>0) {
+                try {
+                    builder.append(String.format("%" + columnWidth + "s ", (c == 0 ? FIRST_COLUMN : Integer.toString(c - 1))));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    log.severe("Failed to create item : '%" + columnWidth + "s '");
+                    throw ex;
+                }
             }
         }
     }

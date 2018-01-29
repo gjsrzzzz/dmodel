@@ -4,15 +4,15 @@ import lombok.Data;
 
 import java.util.*;
 
-public @Data class DataModel {
+public @Data class DataPointHistory {
     private final List<Event> events=new ArrayList<>();
-    private final Map<RepeatCoverage, DataPoint> dataPoints=new LinkedHashMap<>();
+    private final Map<RepeatCoverage, DataPointValue> dataPoints=new LinkedHashMap<>();
 
-    public DataModel() {
+    public DataPointHistory() {
         events.add(new Event(0));
     }
 
-    private DataModel(int version) {
+    private DataPointHistory(int version) {
         events.add(new Event(version));
     }
 
@@ -26,7 +26,7 @@ public @Data class DataModel {
         {
             throw new ModelException("Duplicate repeat key "+ repeatKey);
         }
-        addDataPoint(new DataPoint(string, repeatKey, firstEvent(), Event.INFINITY));
+        addDataPoint(new DataPointValue(string, repeatKey, firstEvent(), Event.INFINITY));
     }
 
     public Event getLastEvent() {
@@ -42,19 +42,19 @@ public @Data class DataModel {
         return lastEvent;
     }
 
-    public DataModel nextVersion() {
+    public DataPointHistory nextVersion() {
         Event lastEvent=getLastEvent();
-        DataModel nextModel=new DataModel(getLastEvent().getVersion()+1);
-        for (DataPoint dataPoint : dataPoints.values())
+        DataPointHistory nextModel=new DataPointHistory(getLastEvent().getVersion()+1);
+        for (DataPointValue dataPointValue : dataPoints.values())
         {
-            if (dataPoint.coversVersion(lastEvent.getVersion())) {
-                nextModel.add(dataPoint.getValue(), dataPoint.getRepeatKey());
+            if (dataPointValue.coversVersion(lastEvent.getVersion())) {
+                nextModel.add(dataPointValue.getValue(), dataPointValue.getRepeatKey());
             }
         }
         return nextModel;
     }
 
-    public void merge(DataModel nextModel) {
+    public void merge(DataPointHistory nextModel) {
         for (Event event : nextModel.events)
         {
             events.add(event);
@@ -96,9 +96,9 @@ public @Data class DataModel {
             {
                 if (!covers)
                 {
-                    DataPoint dataPoint=new DataPoint(link.getValue(), repeatKey,
+                    DataPointValue dataPointValue =new DataPointValue(link.getValue(), repeatKey,
                             eventMap.get(validFrom), eventMap.get(version-1));
-                    addDataPoint(dataPoint);
+                    addDataPoint(dataPointValue);
                     on=false;
                 }
             }
@@ -112,14 +112,14 @@ public @Data class DataModel {
             }
         }
         if (on) {
-            DataPoint dataPoint = new DataPoint(link.getValue(), repeatKey,
+            DataPointValue dataPointValue = new DataPointValue(link.getValue(), repeatKey,
                     eventMap.get(validFrom), eventMap.get(link.getValidTo()));
-            addDataPoint(dataPoint);
+            addDataPoint(dataPointValue);
         }
     }
 
-    private void addDataPoint(DataPoint dataPoint) {
-        dataPoints.put(dataPoint.getRepeatCoverage(), dataPoint);
+    void addDataPoint(DataPointValue dataPointValue) {
+        dataPoints.put(dataPointValue.getRepeatCoverage(), dataPointValue);
     }
 
     /* Resequence the repeats starting at 1
@@ -168,7 +168,7 @@ public @Data class DataModel {
     public void remove(String ... strings) {
         RepeatCoverage repeatKey=null;
         for (String string : strings) {
-            for (Map.Entry<RepeatCoverage, DataPoint> entry : dataPoints.entrySet()) {
+            for (Map.Entry<RepeatCoverage, DataPointValue> entry : dataPoints.entrySet()) {
                 if (entry.getValue().getValue().equals(string))
                 {
                     repeatKey=entry.getKey();

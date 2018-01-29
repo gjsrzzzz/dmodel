@@ -32,9 +32,9 @@ public class Resequencer {
         createMap(links);
     }
 
-    public Resequencer(Collection<DataPoint> dataPoints, int version) {
+    public Resequencer(Collection<DataPointValue> dataPointValues, int version) {
         links=new LinkedList<>();
-        for (DataPoint point : dataPoints) {
+        for (DataPointValue point : dataPointValues) {
             BackLink link = new BackLink(point.getValue(), RepeatSequenceHelper.getHierarchy(point.getRepeatKey()),
                     point.getValidFrom().getVersion(), point.getValidTo().getVersion());
             //   version, Event.INFINITY.getVersion());
