@@ -16,6 +16,11 @@ public @Data class DataPointHistory {
         events.add(new Event(version));
     }
 
+    public DataPointHistory(Event event) {
+        events.add(event);
+    }
+
+
     private Event firstEvent()
     {
         return events.get(0);
