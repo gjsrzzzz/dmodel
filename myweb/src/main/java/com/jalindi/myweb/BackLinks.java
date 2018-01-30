@@ -28,6 +28,22 @@ public class BackLinks {
 
     }
 
+    public BackLinks(Collection<DataPointValue> dataPoints, Event sliceEvent) {
+        this.lastVersion=sliceEvent.getVersion();
+        for (DataPointValue point : dataPoints)
+        {
+            BackLink link = new BackLink(point.getValue(), RepeatSequenceHelper.getHierarchy(point.getRepeatKey()),
+                    point.getValidFrom().getVersion(), point.getValidTo().getVersion());
+            if (point.coversVersion(lastVersion))
+            {
+                nextLinks.add(link);
+            }
+            else {
+                previousLinks.add(link);
+            }
+        }
+    }
+
     public Collection<BackLink> process()
     {
         createBackLinksAndResequence();

@@ -106,10 +106,12 @@ public class ModelGrid {
 
     private void addColumnHeaders(StringBuilder builder) {
         for (int c = 0; c < maxColumnWidths.length; c++) {
+            String headerText=c == 0 ? FIRST_COLUMN : Integer.toString(c - 1);
+            maxColumnWidths[c] = Math.max(headerText.length(), maxColumnWidths[c]);
             int columnWidth = maxColumnWidths[c];
             if (columnWidth>0) {
                 try {
-                    builder.append(String.format("%" + columnWidth + "s ", (c == 0 ? FIRST_COLUMN : Integer.toString(c - 1))));
+                    builder.append(String.format("%" + columnWidth + "s ", headerText));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     log.severe("Failed to create item : '%" + columnWidth + "s '");

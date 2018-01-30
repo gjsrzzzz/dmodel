@@ -42,6 +42,26 @@ public class DataState {
     }
 
     private void addDataPoint(Event sliceEvent, String scope, List<DataPoint> dataPoints) {
+        DataPointHistory model = createHistoryModel(scope, null);
+        model.log();
+        model.slice(sliceEvent);
+        model.log();
+        for (DataPoint dataPoint : dataPoints)
+        {
+            //   dataPoint.getRepeatKey();
+            int index=1;
+            for (String value : dataPoint.getValues()) {
+        //        model.add(value);
+                model.addDataPoint(new DataPointValue(value, dataPoint.getRepeatKey()+"/"+index,
+                        sliceEvent, Event.INFINITY));
+                index++;
+            }
+        }
+        model.merge(sliceEvent);
+        copyModelBackToState(scope, model);
+    }
+
+        private void addDataPoint2(Event sliceEvent, String scope, List<DataPoint> dataPoints) {
         DataPointHistory model=null;
         DataPointHistory sliceHistory=new DataPointHistory(sliceEvent);
         for (DataPoint dataPoint : dataPoints)
@@ -59,6 +79,10 @@ public class DataState {
             model=createHistoryModel(scope, sliceEvent);
             model.merge(sliceHistory);
         }
+            copyModelBackToState(scope, model);
+    }
+
+    private void copyModelBackToState(String scope, DataPointHistory model) {
         List<DataPointValue> dataPointValues=getOrCreateDataPointValue(scope);
         dataPointValues.clear();
         for (DataPointValue dataPoint : model.getDataPoints().values())

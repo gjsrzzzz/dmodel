@@ -22,6 +22,7 @@ public class StateTests {
         dataState.setDataSlice(slice);
 
         slice=slice.nextVersion();
+        slice.remove(scope, "Green");
         slice.add(scope, "Orange", "Yellow");
         dataState.setDataSlice(slice);
 

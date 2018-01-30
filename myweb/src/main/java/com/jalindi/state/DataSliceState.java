@@ -33,6 +33,17 @@ public class DataSliceState {
         }
     }
 
+    public void remove(String scope, String... newValues) {
+        List<DataPoint> values = getOrCreateDataPoints(scope);
+        DataPoint dataPoint = null;
+        if (values.size() > 0)
+            dataPoint = values.get(0);
+        for (String value : newValues) {
+            dataPoint.getValues().remove(value);
+        }
+    }
+    
+
     private List<DataPoint> getOrCreateDataPoints(String scope) {
         List<DataPoint> values = dataPoints.get(scope);
         if (values == null) {
@@ -69,4 +80,6 @@ public class DataSliceState {
     public int getVersion() {
         return version;
     }
+
+
 }

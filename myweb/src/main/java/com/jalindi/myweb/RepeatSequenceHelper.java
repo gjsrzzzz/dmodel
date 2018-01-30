@@ -9,6 +9,10 @@ public class RepeatSequenceHelper {
         return sequence.hierarchy;
     }*/
     public static RepeatSequence getHierarchy(String repeatKey) {
+        if (repeatKey==null || repeatKey.length()==0)
+        {
+            repeatKey="/1";
+        }
         RepeatSequence sequence=new RepeatSequence(repeatKey);
         return sequence;
     }

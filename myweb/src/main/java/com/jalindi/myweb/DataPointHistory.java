@@ -1,9 +1,12 @@
 package com.jalindi.myweb;
 
+import com.jalindi.state.DataPoint;
 import lombok.Data;
+import lombok.extern.java.Log;
 
 import java.util.*;
 
+@Log
 public @Data class DataPointHistory {
     private final List<Event> events=new ArrayList<>();
     private final Map<RepeatCoverage, DataPointValue> dataPoints=new LinkedHashMap<>();
@@ -71,6 +74,15 @@ public @Data class DataPointHistory {
         rebuild(finalLinks);
         links.log();
     }
+
+    public void merge(Event sliceEvent) {
+        BackLinks links=new BackLinks(dataPoints.values(), sliceEvent);
+        links.log();
+        Collection<BackLink> finalLinks=links.process();
+        rebuild(finalLinks);
+        links.log();
+    }
+
 
     private void rebuild(Collection<BackLink> finalLinks) {
         Map<Integer, Event> eventMap=new HashMap<>();
@@ -191,5 +203,38 @@ public @Data class DataPointHistory {
 
     public int size() {
         return dataPoints.size();
+    }
+
+    public void slice(Event sliceEvent) {
+        Event lastBeforeSlice=null;
+        for (Event event : events)
+        {
+            if (event.getVersion()==sliceEvent.getVersion()-1)
+            {
+                lastBeforeSlice=event;
+            }
+        }
+        int sliceStart=sliceEvent.getVersion();
+        int sliceEnd=Event.INFINITY.getVersion();
+        List<DataPointValue> copy=new ArrayList<>(dataPoints.values());
+        dataPoints.clear();
+        for (DataPointValue dataPointValue : copy) {
+            if (dataPointValue.getValidFrom().getVersion() < sliceStart)
+            {
+                if (dataPointValue.getValidTo().getVersion()>=sliceStart)
+                {
+                    addDataPoint(new DataPointValue(dataPointValue.getValue(), dataPointValue.getRepeatKey(),
+                            dataPointValue.getValidFrom(), lastBeforeSlice));
+                }
+                else
+                {
+                    addDataPoint(dataPointValue);
+                }
+            }
+        }
+    }
+
+    public void log() {
+        log.info("Model\n"+asGrid());
     }
 }
