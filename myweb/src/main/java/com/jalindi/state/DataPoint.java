@@ -27,4 +27,11 @@ class DataPoint {
     {
         values.add(value);
     }
+
+    public void addAfter(String after, String[] newValues) {
+        for (String value : newValues)
+        {
+            values.add(0, value);
+        }
+    }
 }

@@ -1,6 +1,5 @@
 package com.jalindi.myweb;
 
-import com.jalindi.state.DataPoint;
 import lombok.Data;
 import lombok.extern.java.Log;
 
@@ -69,18 +68,21 @@ public @Data class DataPointHistory {
         }
         int thisVersion=nextModel.firstEvent().getVersion();
         BackLinks links=new BackLinks(dataPoints.values(), nextModel.dataPoints.values(),thisVersion );
+        processBackLinkScanResequence(links);
+    }
+
+    private ResequencedItems processBackLinkScanResequence(BackLinks links) {
         links.log();
-        Collection<BackLink> finalLinks=links.process();
+        ResequencedItems resequencedItems = links.process();
+        Collection<BackLink> finalLinks=links.getNextLinks();
         rebuild(finalLinks);
         links.log();
+        return resequencedItems;
     }
 
     public void merge(Event sliceEvent) {
         BackLinks links=new BackLinks(dataPoints.values(), sliceEvent);
-        links.log();
-        Collection<BackLink> finalLinks=links.process();
-        rebuild(finalLinks);
-        links.log();
+        processBackLinkScanResequence(links);
     }
 
 

@@ -14,15 +14,17 @@ public class Resequencer {
         BackLink previousLink=null;
         List<BackLink> children=new ArrayList<>();
 
-        public void resequence(BackLink link) {
+        public ResequencedItems resequence(BackLink link) {
+            ResequencedItems resequenceItems=new ResequencedItems();
             int pathItemToResequence = link.getRepeatSequence().length()-1;
             String repeatKeyPrefix=link.getRepeatSequence().getRepeatKey()+"/";
             ResequenceData dataForChildren=getOrCreateResequenceData(repeatKeyPrefix);
-            link.setRepeatSequence(link.getRepeatSequence().resequence(repeatIndex));
+            resequenceItems.add(link.getRepeatSequence().resequencePathItem(pathItemToResequence, repeatIndex));
             for (BackLink child : dataForChildren.children)
             {
-                child.getRepeatSequence().resequencePathItem(pathItemToResequence, repeatIndex);
+                resequenceItems.add(child.getRepeatSequence().resequencePathItem(pathItemToResequence, repeatIndex));
             }
+            return resequenceItems;
         }
     }
 
@@ -64,7 +66,8 @@ public class Resequencer {
         return resequenceData;
     }
 
-    public void resequence(int lastVersion) {
+    public ResequencedItems resequence(int lastVersion) {
+        ResequencedItems resequenceDataList=new ResequencedItems();
         for (ListIterator<BackLink> iterator = links.listIterator(); iterator.hasNext(); ) {
             BackLink link = iterator.next();
             Resequencer.ResequenceData resequenceData = getOrCreateResequenceData(link.getRepeatSequence().getPrefixForLastInHierarchy());
@@ -74,13 +77,14 @@ public class Resequencer {
             } else {
                 int currentSequence = link.getRepeatSequence().lastInHierarchy();
                 if (currentSequence != resequenceData.repeatIndex) {
-                    resequenceData.resequence(link);
+                    resequenceDataList.add(resequenceData.resequence(link));
                     //              link.setValidFrom(link.getFirstLink().getValidFrom());
                 }
                 resequenceData.repeatIndex++;
                 resequenceData.previousLink = link;
             }
         }
+        return resequenceDataList;
     }
 
     public void resequence(int lastVersion, String afterValue, String... values) {

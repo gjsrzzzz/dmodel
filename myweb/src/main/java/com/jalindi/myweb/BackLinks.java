@@ -44,21 +44,18 @@ public class BackLinks {
         }
     }
 
-    public Collection<BackLink> process()
+    public ResequencedItems process()
     {
-        createBackLinksAndResequence();
-        resequence();
-        return nextLinks;
-        // Resequence
-        // Rebuild
+        createBackLinksAndScanLinks();
+        return resequence();
     }
 
-    private void resequence() {
+    private ResequencedItems resequence() {
         Resequencer resequencer=new Resequencer(nextLinks);
-        resequencer.resequence(lastVersion);
+        return resequencer.resequence(lastVersion);
     }
 
-    private void createBackLinksAndResequence() {
+    private void createBackLinksAndScanLinks() {
         for (int version = lastVersion; version>=0; version--) {
             // Create back links
             createBackLinks(version);
@@ -139,5 +136,9 @@ public class BackLinks {
             }
         }
         log.info(builder.toString());
+    }
+
+    public List<BackLink> getNextLinks() {
+        return nextLinks;
     }
 }

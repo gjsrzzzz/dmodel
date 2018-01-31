@@ -82,4 +82,15 @@ public class DataSliceState {
     }
 
 
+    public void addAfter(String scope, String after, String ... newValues) {
+        List<DataPoint> values = getOrCreateDataPoints(scope);
+        DataPoint dataPoint = null;
+        if (values.size() == 0) {
+            dataPoint = new DataPoint();
+            values.add(dataPoint);
+        } else {
+            dataPoint = values.get(0);
+        }
+            dataPoint.addAfter(after, newValues);
+    }
 }

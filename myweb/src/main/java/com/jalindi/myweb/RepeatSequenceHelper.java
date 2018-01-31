@@ -1,7 +1,6 @@
 package com.jalindi.myweb;
 
 import java.util.Arrays;
-import java.util.Stack;
 
 public class RepeatSequenceHelper {
  /*   public static int[] getHierarchy(String repeatKey) {
@@ -134,8 +133,10 @@ public class RepeatSequenceHelper {
             return hierarchy.length;
         }
 
-        public void resequencePathItem(int pathItemToResequence, int repeatIndex) {
+        public ResequencedItem resequencePathItem(int pathItemToResequence, int repeatIndex) {
+            String repeatKey=getRepeatKey();
             hierarchy[pathItemToResequence]=repeatIndex;
+            return new ResequencedItem(repeatKey, getRepeatKey());
         }
     }
   /*  public static int nextRepeat(Iterable<String> repeatKeys)
