@@ -14,14 +14,14 @@ public class BackLinks {
         this.lastVersion=version;
         for (DataPointValue point : previousDataPoints)
         {
-            BackLink link=new BackLink(point.getValue(), RepeatSequenceHelper.getHierarchy(point.getRepeatKey()),
+            BackLink link=new BackLink(point.getValue(), RepeatSequenceHelper.createRepeatSequence(point.getRepeatKey()),
                     point.getValidFrom().getVersion(), point.getValidTo().getVersion());
             previousLinks.add(link);
         }
 
         for (DataPointValue point : nextDataPoints)
         {
-            BackLink link=new BackLink(point.getValue(), RepeatSequenceHelper.getHierarchy(point.getRepeatKey()),
+            BackLink link=new BackLink(point.getValue(), RepeatSequenceHelper.createRepeatSequence(point.getRepeatKey()),
                     version, Event.INFINITY.getVersion());
             nextLinks.add(link);
         }
@@ -32,7 +32,7 @@ public class BackLinks {
         this.lastVersion=sliceEvent.getVersion();
         for (DataPointValue point : dataPoints)
         {
-            BackLink link = new BackLink(point.getValue(), RepeatSequenceHelper.getHierarchy(point.getRepeatKey()),
+            BackLink link = new BackLink(point.getValue(), RepeatSequenceHelper.createRepeatSequence(point.getRepeatKey()),
                     point.getValidFrom().getVersion(), point.getValidTo().getVersion());
             if (point.coversVersion(lastVersion))
             {

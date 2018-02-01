@@ -7,7 +7,7 @@ public class RepeatSequenceHelper {
         RepeatSequence sequence=new RepeatSequence(repeatKey);
         return sequence.hierarchy;
     }*/
-    public static RepeatSequence getHierarchy(String repeatKey) {
+    public static RepeatSequence createRepeatSequence(String repeatKey) {
         if (repeatKey==null || repeatKey.length()==0)
         {
             repeatKey="/1";
@@ -115,6 +115,14 @@ public class RepeatSequenceHelper {
         public String getRepeatPrefix() {
             return repeatPrefix;
          }
+
+        public String getRepeatKeyForLastInHierarchy() {
+            if (hierarchy.length<=1)
+            {
+                return repeatPrefix.substring(0, repeatPrefix.length()-1);
+            }
+            return getRepeatKey(hierarchy.length-1);
+        }
 
         public String getPrefixForLastInHierarchy() {
             if (hierarchy.length<=1)

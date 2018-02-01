@@ -13,9 +13,9 @@ class DataPoint {
     private @NonNull
     final List<String> values=new ArrayList<>();
     private @NonNull final String repeatKey;
-    public DataPoint()
+    public DataPoint(String repeatKey)
     {
-        repeatKey="";
+        this.repeatKey=repeatKey;
     }
 
     private DataPoint(String repeatKey, String value)
@@ -33,5 +33,10 @@ class DataPoint {
         {
             values.add(0, value);
         }
+    }
+
+    @Override
+    public String toString() {
+        return repeatKey+ " : "+values.toString();
     }
 }

@@ -4,10 +4,7 @@ import com.jalindi.state.DataPoint;
 import com.jalindi.state.DataSliceState;
 import lombok.extern.java.Log;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Log
 public class DataState {
@@ -16,23 +13,48 @@ public class DataState {
 
     public void setDataSlice(DataSliceState dataSlice) {
         Event event=getOrCreateEvent(dataSlice);
-        for (Map.Entry<String, List<DataPoint>> entry : dataSlice.getDataPoints().entrySet())
+        for (Map.Entry<String, Map<String, DataPoint>> entry : dataSlice.getDataPoints().entrySet())
         {
             String scope=entry.getKey();
-            List<DataPoint> dataPoints=entry.getValue();
-            addDataPoint(event, scope, dataPoints);
+            Map<String, DataPoint> dataPoints=entry.getValue();
+            addDataPoint(event, scope, dataPoints.values());
         }
     }
 
-    private Event getOrCreateEvent(DataSliceState dataSlice) {
+
+    public DataSliceState getDataSlice(int version) {
+        Event event= getEvent(version);
+        DataSliceState state=new DataSliceState(version);
+        for (Map.Entry<String, List<DataPointValue>> entry : dataPoints.entrySet())
+        {
+            String scope=entry.getKey();
+            for (DataPointValue value : entry.getValue())
+            {
+                if (value.coversVersion(version))
+                {
+                    RepeatSequenceHelper.RepeatSequence repeatSequence=RepeatSequenceHelper.createRepeatSequence(value.getRepeatKey());
+                    String repeatKey = repeatSequence.getRepeatKeyForLastInHierarchy();
+                    state.add(scope, repeatKey,value.getValue());
+                }
+            }
+        }
+        return state;
+    }
+
+    private Event getEvent(int version) {
         Event event=null;
         for (Event scanEvent : events)
         {
-            if (scanEvent.getVersion()==dataSlice.getVersion())
+            if (scanEvent.getVersion()==version)
             {
                 event=scanEvent;
             }
         }
+        return event;
+    }
+
+    private Event getOrCreateEvent(DataSliceState dataSlice) {
+        Event event=getEvent(dataSlice.getVersion());
         if (event==null)
         {
             event=new Event(dataSlice.getVersion());
@@ -41,7 +63,7 @@ public class DataState {
        return event;
     }
 
-    private void addDataPoint(Event sliceEvent, String scope, List<DataPoint> dataPoints) {
+    private void addDataPoint(Event sliceEvent, String scope, Collection<DataPoint> dataPoints) {
         DataPointHistory model = createHistoryModel(scope, null);
         model.log();
         model.slice(sliceEvent);
@@ -136,4 +158,5 @@ public class DataState {
         ModelGrid grid=model.asGrid();
         return grid;
     }
+
 }

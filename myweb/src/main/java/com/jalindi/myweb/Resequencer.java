@@ -37,7 +37,7 @@ public class Resequencer {
     public Resequencer(Collection<DataPointValue> dataPointValues, int version) {
         links=new LinkedList<>();
         for (DataPointValue point : dataPointValues) {
-            BackLink link = new BackLink(point.getValue(), RepeatSequenceHelper.getHierarchy(point.getRepeatKey()),
+            BackLink link = new BackLink(point.getValue(), RepeatSequenceHelper.createRepeatSequence(point.getRepeatKey()),
                     point.getValidFrom().getVersion(), point.getValidTo().getVersion());
             //   version, Event.INFINITY.getVersion());
             links.add(link);
@@ -115,7 +115,7 @@ public class Resequencer {
         if (values!=null) {
             for (String value : values) {
                 BackLink backLink = new BackLink(value,
-                        RepeatSequenceHelper.getHierarchy(repeatPrefix + repeatIndex),
+                        RepeatSequenceHelper.createRepeatSequence(repeatPrefix + repeatIndex),
                         version, Event.INFINITY.getVersion());
                 links.add(backLink);
                 repeatIndex++;

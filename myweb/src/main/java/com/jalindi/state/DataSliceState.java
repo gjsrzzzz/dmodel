@@ -2,59 +2,55 @@ package com.jalindi.state;
 
 import com.jalindi.myweb.DataState;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataSliceState {
     private final int version;
-    private final Map<String, List<DataPoint>> dataPoints = new HashMap<>();
+    private final Map<String, Map<String, DataPoint>> dataPoints = new HashMap<>();
 
     public DataSliceState() {
         version = 0;
     }
 
-    private DataSliceState(int version) {
+    public DataSliceState(int version) {
         this.version = version;
     }
 
-    public void add(String scope, String... newValues) {
-        List<DataPoint> values = getOrCreateDataPoints(scope);
-        DataPoint dataPoint = null;
-        if (values.size() == 0) {
-            dataPoint = new DataPoint();
-            values.add(dataPoint);
-        } else {
-            dataPoint = values.get(0);
-        }
+    public void add(String scope, String repeatKey, String... newValues) {
+        DataPoint dataPoint = getOrCreateDataPoint(scope, repeatKey);
         for (String value : newValues) {
             dataPoint.add(value);
         }
     }
 
-    public void remove(String scope, String... newValues) {
-        List<DataPoint> values = getOrCreateDataPoints(scope);
-        DataPoint dataPoint = null;
-        if (values.size() > 0)
-            dataPoint = values.get(0);
+    public void remove(String scope, String repeatKey, String... newValues) {
+        DataPoint dataPoint = getOrCreateDataPoint(scope, repeatKey);
         for (String value : newValues) {
             dataPoint.getValues().remove(value);
         }
     }
-    
 
-    private List<DataPoint> getOrCreateDataPoints(String scope) {
-        List<DataPoint> values = dataPoints.get(scope);
-        if (values == null) {
-            values = new ArrayList<>();
-            dataPoints.put(scope, values);
+    private DataPoint getOrCreateDataPoint(String scope, String repeatKey) {
+        Map<String, DataPoint> valuesMap = getOrCreateDataPointMap(scope);
+        DataPoint dataPoint =valuesMap.get(repeatKey);
+        if (dataPoint==null)
+        {
+            dataPoint=new DataPoint(repeatKey);
+            valuesMap.put(repeatKey, dataPoint);
         }
-
-        return values;
+        return dataPoint;
     }
 
-    public Map<String, List<DataPoint>> getDataPoints() {
+    private Map<String, DataPoint> getOrCreateDataPointMap(String scope) {
+        Map<String, DataPoint> valuesMap = dataPoints.get(scope);
+        if (valuesMap == null) {
+            valuesMap = new TreeMap<>();
+            dataPoints.put(scope, valuesMap);
+        }
+        return valuesMap;
+    }
+
+    public Map<String, Map<String, DataPoint>> getDataPoints() {
         return dataPoints;
     }
 
@@ -66,12 +62,12 @@ public class DataSliceState {
 
     public DataSliceState nextVersion() {
         DataSliceState nextState = new DataSliceState(version + 1);
-        for (Map.Entry<String, List<DataPoint>> entry : dataPoints.entrySet()) {
+        for (Map.Entry<String,  Map<String, DataPoint>> entry : dataPoints.entrySet()) {
             String scope = entry.getKey();
-            List<DataPoint> dataPoints = entry.getValue();
-            List<DataPoint> nextDataPoints = nextState.getOrCreateDataPoints(scope);
-            for (DataPoint dataPoint : dataPoints) {
-                nextDataPoints.add(dataPoint);
+            Map<String, DataPoint> dataPoints = entry.getValue();
+            Map<String, DataPoint> nextDataPoints = nextState.getOrCreateDataPointMap(scope);
+            for (DataPoint dataPoint : dataPoints.values()) {
+                nextDataPoints.put(dataPoint.getRepeatKey(), dataPoint);
             }
         }
         return nextState;
@@ -82,15 +78,8 @@ public class DataSliceState {
     }
 
 
-    public void addAfter(String scope, String after, String ... newValues) {
-        List<DataPoint> values = getOrCreateDataPoints(scope);
-        DataPoint dataPoint = null;
-        if (values.size() == 0) {
-            dataPoint = new DataPoint();
-            values.add(dataPoint);
-        } else {
-            dataPoint = values.get(0);
-        }
-            dataPoint.addAfter(after, newValues);
+    public void addAfter(String scope, String repeatKey, String after, String ... newValues) {
+        DataPoint dataPoint = getOrCreateDataPoint(scope, repeatKey);
+        dataPoint.addAfter(after, newValues);
     }
 }
