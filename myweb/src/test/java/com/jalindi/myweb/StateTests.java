@@ -46,6 +46,14 @@ public class StateTests {
     public void testMultiStateInContainer()
     {
         DataState state = createDataModel2("/C1", "/C2");
+        assertArrayEquals(new String[][] {
+                        {"/C1/1","","","Black"},
+                        {"/C1/2","Red","--", "--"},
+                        {"/C1/3","Green","",""},
+                        {"/C1/4","Blue","--","Pink"},
+                        {"/C2/1","","Orange",""},
+                        {"/C2/2","","Yellow","--"}},
+                state.asGrid(scope).getGrid());
         DataSliceState slice= state.getDataSlice(1);
         log.info(slice.toString());
         slice.add(scope,"/C2","Purple");
@@ -99,6 +107,13 @@ public class StateTests {
         slice.remove(scope, baseRepeatKey, "Green");
         slice.add(scope, secondRepeatKey, "Orange", "Yellow");
         dataState.setDataSlice(slice);
+        assertArrayEquals(new String[][] {
+                        {baseRepeatKey+"/1","Red","--"},
+                        {baseRepeatKey+"/2","Green",""},
+                        {baseRepeatKey+"/3","Blue","--"},
+                        {secondRepeatKey+"/1","","Orange"},
+                        {secondRepeatKey+"/2","","Yellow"}},
+                dataState.asGrid(scope).getGrid());
 
         slice=slice.nextVersion();
         slice.remove(scope, baseRepeatKey, "Blue");

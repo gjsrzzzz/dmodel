@@ -12,15 +12,51 @@ public class DataState {
     private final Map<String, List<DataPointValue>> dataPoints=new HashMap<>();
 
     public void setDataSlice(DataSliceState dataSlice) {
+        if (true || dataSlice.getVersion()>=getHighestVersion())
+        {
+            addDataSliceInternal(dataSlice);
+            return;
+        }
+        DataSliceState oldSlice=getDataSlice(dataSlice.getVersion()+1);
+      /* Not needed, fixed slicer
+       Event event=getOrCreateEvent(dataSlice);
+        DataState sliceState=new DataState();
+        sliceState.addDataSliceInternal(dataSlice);
+        sliceState.addDataSliceInternal(oldSlice);
+        ModelGrid grid=sliceState.asGrid("C.A");
+        log.info("Model\n"+grid);
+        for (Map.Entry<String, List<DataPointValue>> entry : sliceState.dataPoints.entrySet()) {
+            String scope = entry.getKey();
+            List<DataPointValue> values=entry.getValue();
+            copyBackToModel(event, scope, values);
+        }*/
+    }
+
+   /* private void copyBackToModel(Event sliceEvent, String scope, List<DataPointValue> values) {
+        DataPointHistory model = createHistoryModel(scope, null);
+        model.log();
+        model.slice(sliceEvent);
+        model.log();
+
+        for (DataPointValue value : values) {
+            if (value.coversVersion(sliceEvent.getVersion())) {
+                model.addDataPoint(value);
+            }
+        }
+        model.merge(sliceEvent);
+        model.log();
+        copyModelBackToState(scope, model);
+    }*/
+
+    private void addDataSliceInternal(DataSliceState dataSlice) {
         Event event=getOrCreateEvent(dataSlice);
         for (Map.Entry<String, Map<String, DataPoint>> entry : dataSlice.getDataPoints().entrySet())
         {
             String scope=entry.getKey();
             Map<String, DataPoint> dataPoints=entry.getValue();
-            addDataPoint(event, scope, dataPoints.values());
+            addDataPoint(event, scope, dataPoints.values(), event.getVersion()==getHighestVersion()?Event.INFINITY:event);
         }
     }
-
 
     public DataSliceState getDataSlice(int version) {
         Event event= getEvent(version);
@@ -52,6 +88,14 @@ public class DataState {
         }
         return event;
     }
+    private int getHighestVersion() {
+        int highestVersion=0;
+        for (Event scanEvent : events)
+        {
+            highestVersion=Math.max(highestVersion,scanEvent.getVersion());
+        }
+        return highestVersion;
+    }
 
     private Event getOrCreateEvent(DataSliceState dataSlice) {
         Event event=getEvent(dataSlice.getVersion());
@@ -63,7 +107,7 @@ public class DataState {
        return event;
     }
 
-    private void addDataPoint(Event sliceEvent, String scope, Collection<DataPoint> dataPoints) {
+    private void addDataPoint(Event sliceEvent, String scope, Collection<DataPoint> dataPoints, Event endEvent) {
         DataPointHistory model = createHistoryModel(scope, null);
         model.log();
         model.slice(sliceEvent);
@@ -75,11 +119,11 @@ public class DataState {
             for (String value : dataPoint.getValues()) {
         //        model.add(value);
                 model.addDataPoint(new DataPointValue(value, dataPoint.getRepeatKey()+"/"+index,
-                        sliceEvent, Event.INFINITY));
+                        sliceEvent, endEvent));
                 index++;
             }
         }
-        model.merge(sliceEvent);
+        model.merge();
         copyModelBackToState(scope, model);
     }
 
