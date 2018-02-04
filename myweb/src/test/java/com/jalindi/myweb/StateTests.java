@@ -90,8 +90,7 @@ public class StateTests {
         slice.addAfter(scope, baseRepeatKey, null, "Black");
         dataState.setDataSlice(slice);
 
-        ModelGrid grid=dataState.asGrid(scope);
-        log.info("Model\n"+grid);
+        dataState.log();;
 
         return dataState;
     }

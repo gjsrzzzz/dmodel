@@ -6,7 +6,8 @@ import java.util.*;
 
 public class DataSliceState {
     private final int version;
-    private final Map<String, Map<String, DataPoint>> dataPoints = new HashMap<>();
+    private final Map<String, Map<String, Container>> containers = new LinkedHashMap<>();
+    private final Map<String, Map<String, DataPoint>> dataPoints = new LinkedHashMap<>();
 
     public DataSliceState() {
         version = 0;
@@ -22,6 +23,11 @@ public class DataSliceState {
             dataPoint.add(value);
         }
     }
+
+    public void addContainer(String scope, String repeatKey) {
+        Container container = getOrCreateContainer(scope, repeatKey);
+    }
+
 
     public void remove(String scope, String repeatKey, String... newValues) {
         DataPoint dataPoint = getOrCreateDataPoint(scope, repeatKey);
@@ -39,6 +45,26 @@ public class DataSliceState {
             valuesMap.put(repeatKey, dataPoint);
         }
         return dataPoint;
+    }
+
+    private Container getOrCreateContainer(String scope, String repeatKey) {
+        Map<String, Container> containersMap = getOrCreateContainerMap(scope);
+        Container container =containersMap.get(repeatKey);
+        if (container==null)
+        {
+            container=new Container(repeatKey);
+            containersMap.put(repeatKey, container);
+        }
+        return container;
+    }
+
+    private Map<String, Container> getOrCreateContainerMap(String scope) {
+        Map<String, Container> containersMap = containers.get(scope);
+        if (containersMap == null) {
+            containersMap = new TreeMap<>();
+            containers.put(scope, containersMap);
+        }
+        return containersMap;
     }
 
     private Map<String, DataPoint> getOrCreateDataPointMap(String scope) {

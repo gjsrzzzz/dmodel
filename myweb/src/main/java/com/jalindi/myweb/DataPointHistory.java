@@ -212,11 +212,15 @@ public @Data class DataPointHistory {
         }
     }
 
-    ModelGrid asGrid() {
-        ModelGrid grid = new ModelGrid(this);
+    ModelGrid asGrid(String scope) {
+        ModelGrid grid = new ModelGrid(scope,this);
        return grid;
     }
 
+    ModelGrid asGrid() {
+        ModelGrid grid = new ModelGrid(this);
+        return grid;
+    }
 
     public int size() {
         return dataPoints.size();
@@ -267,6 +271,6 @@ public @Data class DataPointHistory {
     }
 
     public void log() {
-        log.info("Model\n"+asGrid());
+        log.info("Model\n"+asGrid(null));
     }
 }
