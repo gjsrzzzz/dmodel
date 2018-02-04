@@ -127,7 +127,7 @@ public class DataState {
         copyModelBackToState(scope, model);
     }
 
-        private void addDataPoint2(Event sliceEvent, String scope, List<DataPoint> dataPoints) {
+   /*     private void addDataPoint2(Event sliceEvent, String scope, List<DataPoint> dataPoints) {
         DataPointHistory model=null;
         DataPointHistory sliceHistory=new DataPointHistory(sliceEvent);
         for (DataPoint dataPoint : dataPoints)
@@ -146,7 +146,7 @@ public class DataState {
             model.merge(sliceHistory);
         }
             copyModelBackToState(scope, model);
-    }
+    }*/
 
     private void copyModelBackToState(String scope, DataPointHistory model) {
         List<DataPointValue> dataPointValues=getOrCreateDataPointValue(scope);

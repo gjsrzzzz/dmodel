@@ -10,7 +10,7 @@ public class BackLinks {
     private final LinkedList<BackLink> previousLinks=new LinkedList();
     private final LinkedList<BackLink> nextLinks=new LinkedList();
 
-    public BackLinks(Iterable<DataPointValue> previousDataPoints, Iterable<DataPointValue> nextDataPoints, int version) {
+ /*   public BackLinks(Iterable<DataPointValue> previousDataPoints, Iterable<DataPointValue> nextDataPoints, int version) {
         this.lastVersion=version;
         for (DataPointValue point : previousDataPoints)
         {
@@ -26,7 +26,7 @@ public class BackLinks {
             nextLinks.add(link);
         }
 
-    }
+    }*/
 
     public BackLinks(Collection<DataPointValue> dataPoints, Event sliceEvent) {
         this.lastVersion=sliceEvent.getVersion();

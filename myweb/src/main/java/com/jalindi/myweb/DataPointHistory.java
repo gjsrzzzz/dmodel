@@ -61,7 +61,7 @@ public @Data class DataPointHistory {
         return nextModel;
     }
 
-    public void merge(DataPointHistory nextModel) {
+/*    public void merge(DataPointHistory nextModel) {
         for (Event event : nextModel.events)
         {
             events.add(event);
@@ -69,7 +69,7 @@ public @Data class DataPointHistory {
         int thisVersion=nextModel.firstEvent().getVersion();
         BackLinks links=new BackLinks(dataPoints.values(), nextModel.dataPoints.values(),thisVersion );
         processBackLinkScanResequence(links);
-    }
+    }*/
 
     private ResequencedItems processBackLinkScanResequence(BackLinks links) {
         links.log();
@@ -80,9 +80,24 @@ public @Data class DataPointHistory {
         return resequencedItems;
     }
 
-    public void merge(Event sliceEvent) {
-        BackLinks links=new BackLinks(dataPoints.values(), sliceEvent);
-        processBackLinkScanResequence(links);
+    public ResequencedItems merge(DataPointHistory nextModel) {
+        for (Event event : nextModel.events)
+        {
+            events.add(event);
+        }
+        slice(nextModel.getLastEvent());
+        for (Map.Entry<RepeatCoverage,DataPointValue> entry : nextModel.dataPoints.entrySet())
+        {
+            dataPoints.put(entry.getKey(), entry.getValue());
+        }
+        return merge();
+    }
+
+    public ResequencedItems merge() {
+        Event lastEvent=getLastEvent();
+        BackLinks links=new BackLinks(dataPoints.values(), lastEvent);
+        ResequencedItems resequencedItems=processBackLinkScanResequence(links);
+        return resequencedItems;
     }
 
 
@@ -208,29 +223,44 @@ public @Data class DataPointHistory {
     }
 
     public void slice(Event sliceEvent) {
-        Event lastBeforeSlice=null;
+        int sliceVersion=sliceEvent.getVersion();
+        Event eventBeforeSlice=null;
+        Event eventAfterSlice=null;
         for (Event event : events)
         {
-            if (event.getVersion()==sliceEvent.getVersion()-1)
+            if (event.getVersion()==sliceVersion-1)
             {
-                lastBeforeSlice=event;
+                eventBeforeSlice=event;
+            }
+            if (event.getVersion()==sliceVersion+1)
+            {
+                eventAfterSlice=event;
             }
         }
-        int sliceStart=sliceEvent.getVersion();
-        int sliceEnd=Event.INFINITY.getVersion();
         List<DataPointValue> copy=new ArrayList<>(dataPoints.values());
         dataPoints.clear();
         for (DataPointValue dataPointValue : copy) {
-            if (dataPointValue.getValidFrom().getVersion() < sliceStart)
+            if (dataPointValue.getValidFrom().getVersion() < sliceVersion) {
+                if (dataPointValue.getValidTo().getVersion() >= sliceVersion) {
+                    addDataPoint(new DataPointValue(dataPointValue.getValue(), dataPointValue.getRepeatKey(),
+                            dataPointValue.getValidFrom(), eventBeforeSlice));
+                    if (eventAfterSlice!=null && dataPointValue.getValidTo().getVersion()>=eventAfterSlice.getVersion())
+                    {
+                        addDataPoint(new DataPointValue(dataPointValue.getValue(), dataPointValue.getRepeatKey(),
+                                eventAfterSlice, dataPointValue.getValidTo()));
+                    }
+                } else {
+                    addDataPoint(dataPointValue);
+                }
+            } else if (dataPointValue.getValidFrom().getVersion() > sliceVersion) {
+                addDataPoint(dataPointValue);
+            }
+            else
             {
-                if (dataPointValue.getValidTo().getVersion()>=sliceStart)
+                if (eventAfterSlice!=null && dataPointValue.getValidTo().getVersion()>=eventAfterSlice.getVersion())
                 {
                     addDataPoint(new DataPointValue(dataPointValue.getValue(), dataPointValue.getRepeatKey(),
-                            dataPointValue.getValidFrom(), lastBeforeSlice));
-                }
-                else
-                {
-                    addDataPoint(dataPointValue);
+                            eventAfterSlice, dataPointValue.getValidTo()));
                 }
             }
         }
