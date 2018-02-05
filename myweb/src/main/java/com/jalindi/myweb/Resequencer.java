@@ -50,7 +50,7 @@ public class Resequencer {
             String prefix=link.getRepeatSequence().getPrefixForLastInHierarchy();
             ResequenceData resequenceData = getOrCreateResequenceData(prefix);
             resequenceData.prefix=prefix;
-            if (prefix.length()>1) {
+            if (prefix!=null && prefix.length()>1) {
                 resequenceData.children.add(link);
             }
         }

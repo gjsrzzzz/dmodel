@@ -108,4 +108,8 @@ public class DataSliceState {
         DataPoint dataPoint = getOrCreateDataPoint(scope, repeatKey);
         dataPoint.addAfter(after, newValues);
     }
+
+    public Map<String, Map<String, Container>> getContainers() {
+        return containers;
+    }
 }

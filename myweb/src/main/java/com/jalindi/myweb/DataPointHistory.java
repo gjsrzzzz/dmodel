@@ -165,7 +165,7 @@ public @Data class DataPointHistory {
     }
 
     public void add(String ... strings ) {
-        int repeatIndex=RepeatSequenceHelper.nextRepeat(dataPoints.keySet());
+        int repeatIndex=RepeatSequenceHelper.nextRepeat("/", dataPoints.keySet());
         repeatIndex = addValues(repeatIndex, "/", strings);
     }
 

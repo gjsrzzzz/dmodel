@@ -1,5 +1,6 @@
 package com.jalindi.myweb;
 
+import com.jalindi.state.Container;
 import com.jalindi.state.DataPoint;
 import com.jalindi.state.DataSliceState;
 import lombok.extern.java.Log;
@@ -54,6 +55,11 @@ public class DataState {
             Map<String, DataPoint> dataPoints = entry.getValue();
             addDataPoint(event, scope, dataPoints.values(), event.getVersion() == getHighestVersion() ? Event.INFINITY : event);
         }
+        for (Map.Entry<String, Map<String, Container>> entry : dataSlice.getContainers().entrySet()) {
+            String scope = entry.getKey();
+            Map<String, Container> containers = entry.getValue();
+            addContainer(event, scope, containers.values(), event.getVersion() == getHighestVersion() ? Event.INFINITY : event);
+        }
     }
 
     public DataSliceState getDataSlice(int version) {
@@ -63,7 +69,7 @@ public class DataState {
             String scope = entry.getKey();
             for (DataPointValue value : entry.getValue()) {
                 if (value.coversVersion(version)) {
-                    RepeatSequenceHelper.RepeatSequence repeatSequence = RepeatSequenceHelper.createRepeatSequence(value.getRepeatKey());
+                    RepeatSequence repeatSequence = RepeatSequenceHelper.createRepeatSequence(value.getRepeatKey());
                     String repeatKey = repeatSequence.getRepeatKeyForLastInHierarchy();
                     state.add(scope, repeatKey, value.getValue());
                 }
@@ -105,14 +111,24 @@ public class DataState {
         model.slice(sliceEvent);
         model.log();
         for (DataPoint dataPoint : dataPoints) {
-            //   dataPoint.getRepeatKey();
             int index = 1;
             for (String value : dataPoint.getValues()) {
-                //        model.add(value);
-                model.addDataPoint(new DataPointValue(value, dataPoint.getRepeatKey() + "/" + index,
+                 model.addDataPoint(new DataPointValue(value, dataPoint.getRepeatKey() + "/" + index,
                         sliceEvent, endEvent));
                 index++;
             }
+        }
+        model.merge();
+        copyModelBackToState(scope, model);
+    }
+
+    private void addContainer(Event sliceEvent, String scope, Collection<Container> containers, Event endEvent) {
+        scope=scope+".serial";
+        DataPointHistory model = createHistoryModel(scope, null);
+        model.slice(sliceEvent);
+        for (Container container : containers) {
+            model.addDataPoint(new DataPointValue(container.getSerial(), container.getRepeatKey(),
+                    sliceEvent, endEvent));
         }
         model.merge();
         copyModelBackToState(scope, model);

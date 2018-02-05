@@ -17,7 +17,7 @@ class BackLink
     private @NonNull
     String value;
     private @NonNull
-    RepeatSequenceHelper.RepeatSequence repeatSequence;
+    RepeatSequence repeatSequence;
     private @NonNull int validFrom;
     private @NonNull int validTo;
     private BackLink backLink=null;
