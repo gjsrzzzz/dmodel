@@ -18,14 +18,22 @@ public class ResequenceTest
     public void testRequencer()
     {
         DataState state = createDataModel2("/C1", "/C2");
-        assertArrayEquals(new String[][] {
+        String serialC1 = state.getContainerSerial("C","/C1");
+        String serialC2 =state.getContainerSerial("C","/C2");
+                assertArrayEquals(new String[][] {
                         {"C.A","/C1/1","Red"},
                         {"C.A","/C2/1","Green"},
                         {"C.B","/C1/1","Blue"},
-                        {"C.B","/C2/1","Yellow"}
+                        {"C.B","/C2/1","Yellow"},
+                        {"C.serial","/C1",serialC1},
+                        {"C.serial","/C2",serialC2}
                         },
                 state.asGrid());
-
+        DataSliceState nextSlice = state.getLastSlice().nextVersion();
+        nextSlice.addContainerAt("C","/C", 1);
+        nextSlice.addAfter("C.B","/C2","Yellow", "Black", "White");
+        state.setDataSlice(nextSlice);
+        state.log();
     }
 
     @Test

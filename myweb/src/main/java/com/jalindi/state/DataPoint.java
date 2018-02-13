@@ -29,9 +29,24 @@ class DataPoint {
     }
 
     public void addAfter(String after, String[] newValues) {
-        for (String value : newValues)
-        {
-            values.add(0, value);
+        List<String> oldValues=new ArrayList<>(values);
+        values.clear();
+        boolean found=false;
+        for (String oldValue : oldValues) {
+            values.add(oldValue);
+            if (!found && (after==null || oldValue.equals(after))) {
+                addNewValues(newValues);
+                found=true;
+            }
+        }
+        if (!found) {
+            addNewValues(newValues);
+        }
+    }
+
+    private void addNewValues(String[] newValues) {
+        for (String value : newValues) {
+            values.add(value);
         }
     }
 

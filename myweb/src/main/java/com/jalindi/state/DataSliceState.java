@@ -96,6 +96,14 @@ public class DataSliceState {
                 nextDataPoints.put(dataPoint.getRepeatKey(), dataPoint);
             }
         }
+        for (Map.Entry<String,  Map<String, Container>> entry : containers.entrySet()) {
+            String scope = entry.getKey();
+            Map<String, Container> containers = entry.getValue();
+            Map<String, Container> nextDataContainers = nextState.getOrCreateContainerMap(scope);
+            for (Container container : containers.values()) {
+                nextDataContainers.put(container.getRepeatKey(), container);
+            }
+        }
         return nextState;
     }
 
@@ -111,5 +119,27 @@ public class DataSliceState {
 
     public Map<String, Map<String, Container>> getContainers() {
         return containers;
+    }
+
+    public void addContainerAt(String scope, String repeatPrefix, int index) {
+        Map<String, Container> containersMap = getOrCreateContainerMap(scope);
+        int i=0;
+        Container previousContainer=null;
+        ArrayList<Container> newList=new ArrayList();
+        for (Container container : containersMap.values())
+        {
+            if (index==i)
+            {
+                newList.add(new Container(repeatPrefix+(index+1)));
+            }
+            newList.add(container);
+            previousContainer=container;
+            i++;
+        }
+        containersMap.clear();
+        for (Container container : newList)
+        {
+            containersMap.put(container.getRepeatKey(), container);
+        }
     }
 }

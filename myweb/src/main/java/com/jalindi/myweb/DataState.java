@@ -69,9 +69,15 @@ public class DataState {
             String scope = entry.getKey();
             for (DataPointValue value : entry.getValue()) {
                 if (value.coversVersion(version)) {
-                    RepeatSequence repeatSequence = RepeatSequenceHelper.createRepeatSequence(value.getRepeatKey());
-                    String repeatKey = repeatSequence.getRepeatKeyForLastInHierarchy();
-                    state.add(scope, repeatKey, value.getValue());
+                    if (scope.endsWith(SERIAL_POSTFIX))
+                    {
+                        state.addContainer(scope.substring(0,scope.length()-SERIAL_POSTFIX.length()),value.getRepeatKey());
+                    }
+                    else {
+                        RepeatSequence repeatSequence = RepeatSequenceHelper.createRepeatSequence(value.getRepeatKey());
+                        String repeatKey = repeatSequence.getRepeatKeyForLastInHierarchy();
+                        state.add(scope, repeatKey, value.getValue());
+                    }
                 }
             }
         }
@@ -122,8 +128,9 @@ public class DataState {
         copyModelBackToState(scope, model);
     }
 
+    private static final String SERIAL_POSTFIX=".serial";
     private void addContainer(Event sliceEvent, String scope, Collection<Container> containers, Event endEvent) {
-        scope=scope+".serial";
+        scope=scope+SERIAL_POSTFIX;
         DataPointHistory model = createHistoryModel(scope, null);
         model.slice(sliceEvent);
         for (Container container : containers) {
@@ -270,5 +277,22 @@ public class DataState {
             }
         }
         return firstGrid;
+    }
+
+    public String getContainerSerial(String scope, String repeatKey) {
+        List<DataPointValue> values= getOrCreateDataPointValue(scope+SERIAL_POSTFIX);
+        for (DataPointValue value : values)
+        {
+            if (value.getRepeatKey().equals(repeatKey))
+            {
+                return value.getValue();
+            }
+        }
+        return null;
+    }
+
+    public DataSliceState getLastSlice() {
+        int version=getHighestVersion();
+        return getDataSlice(version);
     }
 }
